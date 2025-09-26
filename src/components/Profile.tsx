@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import VoiceRecorder from './VoiceRecorder';
 
@@ -27,7 +28,7 @@ interface UserProfile {
 }
 
 export default function Profile() {
-  const { user, token } = useAuth();
+  const { token } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -35,7 +36,7 @@ export default function Profile() {
 
   useEffect(() => {
     fetchProfile();
-  }, []);
+  }, [token]);
 
   const fetchProfile = async () => {
     try {
@@ -137,10 +138,12 @@ export default function Profile() {
         <h3 className="text-lg font-semibold mb-3">Photos</h3>
         <div className="grid grid-cols-2 gap-4 mb-4">
           {profile.photos.map((photo, index) => (
-            <img
+            <Image
               key={index}
               src={photo}
               alt={`Photo ${index + 1}`}
+              width={200}
+              height={128}
               className="w-full h-32 object-cover rounded-lg"
             />
           ))}

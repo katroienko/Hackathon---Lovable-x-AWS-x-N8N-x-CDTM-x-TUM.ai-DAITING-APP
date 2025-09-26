@@ -24,7 +24,7 @@ export default function SwipeCards({ onMatch }: SwipeCardsProps) {
 
   useEffect(() => {
     fetchPotentialMatches();
-  }, []);
+  }, [token]);
 
   const fetchPotentialMatches = async () => {
     try {
@@ -137,7 +137,7 @@ export default function SwipeCards({ onMatch }: SwipeCardsProps) {
           <div className="absolute inset-0 bg-pink-500 bg-opacity-90 flex items-center justify-center rounded-xl">
             <div className="text-white text-center">
               <div className="text-6xl mb-4">💕</div>
-              <h3 className="text-2xl font-bold">It's a Match!</h3>
+              <h3 className="text-2xl font-bold">It&apos;s a Match!</h3>
             </div>
           </div>
         )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Match {
@@ -20,7 +21,7 @@ export default function ChatList({ onSelectChat }: ChatListProps) {
 
   useEffect(() => {
     fetchMatches();
-  }, []);
+  }, [token]);
 
   const fetchMatches = async () => {
     try {

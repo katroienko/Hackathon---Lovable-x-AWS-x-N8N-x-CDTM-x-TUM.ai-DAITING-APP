@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface VoiceRecorderProps {
-  onVoiceCloned?: (voiceData: any) => void;
+  onVoiceCloned?: (voiceData: { voiceId: string; name: string; status: string }) => void;
 }
 
 export default function VoiceRecorder({ onVoiceCloned }: VoiceRecorderProps) {
@@ -15,7 +15,7 @@ export default function VoiceRecorder({ onVoiceCloned }: VoiceRecorderProps) {
   const [voiceName, setVoiceName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [hasCustomVoice, setHasCustomVoice] = useState(false);
-  const [customVoiceInfo, setCustomVoiceInfo] = useState<any>(null);
+  const [customVoiceInfo, setCustomVoiceInfo] = useState<{ hasCustomVoice: boolean; voiceId?: string; name?: string; status?: string } | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -34,7 +34,7 @@ export default function VoiceRecorder({ onVoiceCloned }: VoiceRecorderProps) {
         clearInterval(timerRef.current);
       }
     };
-  }, []);
+  }, [token]);
 
   const checkExistingVoice = async () => {
     try {
