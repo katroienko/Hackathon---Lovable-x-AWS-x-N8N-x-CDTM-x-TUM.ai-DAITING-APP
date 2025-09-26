@@ -73,9 +73,11 @@ export default function ChatList({ onSelectChat }: ChatListProps) {
             onClick={() => onSelectChat(match._id)}
             className="flex items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100"
           >
-            <img
+            <Image
               src={match.photos[0] || '/default-avatar.png'}
               alt={match.name}
+              width={48}
+              height={48}
               className="w-12 h-12 rounded-full object-cover mr-3"
             />
             <div className="flex-1">

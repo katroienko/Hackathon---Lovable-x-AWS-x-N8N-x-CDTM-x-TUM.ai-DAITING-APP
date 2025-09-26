@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface User {
@@ -116,10 +117,11 @@ export default function SwipeCards({ onMatch }: SwipeCardsProps) {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden h-full flex flex-col">
           {/* Photo */}
           <div className="flex-1 relative">
-            <img
+            <Image
               src={currentUser.photos[0] || '/default-avatar.png'}
               alt={currentUser.name}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
             />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 text-white">
               <h2 className="text-2xl font-bold mb-1">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Message {
@@ -34,7 +35,7 @@ interface ChatProps {
 export default function Chat({ userId, onBack }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [otherUser, setOtherUser] = useState<any>(null);
+  const [otherUser, setOtherUser] = useState<{ _id: string; name: string; photos: string[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -72,7 +73,7 @@ export default function Chat({ userId, onBack }: ChatProps) {
       });
       if (response.ok) {
         const data = await response.json();
-        const matchUser = data.matches?.find((match: any) => match._id === userId);
+        const matchUser = data.matches?.find((match: { _id: string; name: string; photos: string[] }) => match._id === userId);
         setOtherUser(matchUser);
       }
     } catch (error) {
@@ -135,7 +136,7 @@ export default function Chat({ userId, onBack }: ChatProps) {
     }
   };
 
-  const sendMessage = async (content: string, messageType: 'text' | 'voice' = 'text', voiceData?: any) => {
+  const sendMessage = async (content: string, messageType: 'text' | 'voice' = 'text', voiceData?: { audioUrl: string; duration: number; transcript?: string }) => {
     if (!content.trim() && messageType === 'text') return;
 
     setSending(true);
@@ -206,7 +207,7 @@ export default function Chat({ userId, onBack }: ChatProps) {
     }
   };
 
-  const handleAudioMessage = async (audioBlob: Blob) => {
+  const handleAudioMessage = async (_audioBlob: Blob) => {
     try {
       // Convert audio to text using speech recognition
       const transcript = 'Voice message'; // Placeholder - implement speech-to-text if needed
@@ -299,9 +300,11 @@ export default function Chat({ userId, onBack }: ChatProps) {
         </button>
         {otherUser && (
           <div className="flex items-center">
-            <img
+            <Image
               src={otherUser.photos?.[0] || '/default-avatar.png'}
               alt={otherUser.name}
+              width={40}
+              height={40}
               className="w-10 h-10 rounded-full object-cover mr-3"
             />
             <h2 className="text-lg font-semibold">{otherUser.name}</h2>
