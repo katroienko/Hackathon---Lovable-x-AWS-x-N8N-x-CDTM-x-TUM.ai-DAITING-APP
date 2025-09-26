@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
+import { buildApiUrl, API_ENDPOINTS } from '@/config/api';
 
 interface User {
   _id: string;
@@ -29,7 +30,7 @@ export default function SwipeCards({ onMatch }: SwipeCardsProps) {
 
   const fetchPotentialMatches = async () => {
     try {
-      const response = await fetch('http://localhost:8888/api/users/potential-matches', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.POTENTIAL_MATCHES), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -53,7 +54,7 @@ export default function SwipeCards({ onMatch }: SwipeCardsProps) {
     const currentUser = users[currentIndex];
 
     try {
-      const response = await fetch('http://localhost:8888/api/users/swipe', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.SWIPE), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,11 +117,12 @@ export default function SwipeCards({ onMatch }: SwipeCardsProps) {
         {/* Card */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden h-full flex flex-col">
           {/* Photo */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative min-h-96">
             <Image
               src={currentUser.photos[0] || '/default-avatar.png'}
               alt={currentUser.name}
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover"
             />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 text-white">

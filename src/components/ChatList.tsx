@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
+import { buildApiUrl, API_ENDPOINTS } from '@/config/api';
 
 interface Match {
   _id: string;
@@ -25,18 +26,24 @@ export default function ChatList({ onSelectChat }: ChatListProps) {
 
   const fetchMatches = async () => {
     try {
-      const response = await fetch('http://localhost:8888/api/users/matches', {
+      console.log('🔍 Fetching matches with token:', token ? 'present' : 'missing');
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.MATCHES), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
+      console.log('📡 Matches API response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Matches data received:', data);
+        console.log('📊 Number of matches:', data.length);
         setMatches(data);
+      } else {
+        console.error('❌ Matches API error:', response.status, await response.text());
       }
     } catch (error) {
-      console.error('Failed to fetch matches:', error);
+      console.error('💥 Failed to fetch matches:', error);
     } finally {
       setLoading(false);
     }

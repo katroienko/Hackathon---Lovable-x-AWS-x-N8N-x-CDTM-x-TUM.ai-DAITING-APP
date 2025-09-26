@@ -9,7 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003", "http://localhost:3004"],
     methods: ["GET", "POST"]
   }
 });
@@ -48,7 +48,7 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.SOCKET_PORT || 8888;
+const PORT = process.env.SOCKET_PORT || process.env.PORT || 8890;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

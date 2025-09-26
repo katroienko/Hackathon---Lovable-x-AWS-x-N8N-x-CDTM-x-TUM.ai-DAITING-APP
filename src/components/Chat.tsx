@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
+import { buildApiUrl, API_ENDPOINTS } from '@/config/api';
 
 interface Message {
   _id: string;
@@ -66,7 +67,7 @@ export default function Chat({ userId, onBack }: ChatProps) {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch(`http://localhost:8888/api/users/profile`, {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.PROFILE), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -83,7 +84,7 @@ export default function Chat({ userId, onBack }: ChatProps) {
 
   const fetchUserVoice = async () => {
     try {
-      const response = await fetch('http://localhost:8888/api/voice/my-voice', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.MY_VOICE), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -101,7 +102,7 @@ export default function Chat({ userId, onBack }: ChatProps) {
 
   const fetchOtherUserVoice = async () => {
     try {
-      const response = await fetch(`http://localhost:8888/api/voice/user-voice/${userId}`, {
+      const response = await fetch(buildApiUrl(`${API_ENDPOINTS.USER_VOICE}/${userId}`), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -119,7 +120,7 @@ export default function Chat({ userId, onBack }: ChatProps) {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`http://localhost:8888/api/chat/${userId}`, {
+      const response = await fetch(buildApiUrl(`${API_ENDPOINTS.CHAT_HISTORY}/${userId}`), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -141,7 +142,7 @@ export default function Chat({ userId, onBack }: ChatProps) {
 
     setSending(true);
     try {
-      const response = await fetch('http://localhost:8888/api/chat/send', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.SEND_MESSAGE), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -213,7 +214,7 @@ export default function Chat({ userId, onBack }: ChatProps) {
       const transcript = 'Voice message'; // Placeholder - implement speech-to-text if needed
 
       // Convert to text-to-speech using ElevenLabs
-      const response = await fetch('http://localhost:8888/api/voice/text-to-speech', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.TEXT_TO_SPEECH), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -247,7 +248,7 @@ export default function Chat({ userId, onBack }: ChatProps) {
     try {
       const voiceId = isOwnMessage ? userVoiceId : otherUserVoiceId;
 
-      const response = await fetch('http://localhost:8888/api/voice/text-to-speech', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.TEXT_TO_SPEECH), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

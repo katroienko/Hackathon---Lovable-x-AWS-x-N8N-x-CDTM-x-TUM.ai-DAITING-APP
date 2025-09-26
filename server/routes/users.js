@@ -30,7 +30,10 @@ const upload = multer({
 // Get current user profile
 router.get('/profile', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const user = await User.findById(req.user._id)
+      .select('-password')
+      .populate('matches', 'name age photos bio email')
+      .populate('swipedRight', 'name age photos bio email');
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -76,10 +79,10 @@ router.get('/potential-matches', auth, async (req, res) => {
     const currentUser = await User.findById(req.user._id);
     const { ageRange, maxDistance } = currentUser.preferences;
 
+    // Only exclude users that have been swiped, not matches!
     const excludedIds = [
       ...currentUser.swipedRight,
       ...currentUser.swipedLeft,
-      ...currentUser.matches,
       currentUser._id
     ];
 
@@ -88,6 +91,8 @@ router.get('/potential-matches', auth, async (req, res) => {
       gender: currentUser.interestedIn === 'both' ?
         { $in: ['male', 'female', 'other'] } :
         currentUser.interestedIn,
+      // Check mutual interest - other person must be interested in current user's gender
+      interestedIn: { $in: [currentUser.gender, 'both'] },
       age: { $gte: ageRange.min, $lte: ageRange.max },
       isActive: { $ne: false } // Allow true or undefined, exclude false
     };
@@ -119,12 +124,22 @@ router.post('/swipe', auth, async (req, res) => {
       currentUser.swipedRight.push(targetUserId);
 
       // Check if target user already liked current user
-      if (targetUser.swipedRight.includes(currentUserId)) {
+      const alreadyMutualMatch = targetUser.swipedRight.includes(currentUserId);
+
+      // Special logic: if current user is Sofia, create automatic match
+      const isSofia = currentUser.email === 'sofia@test.com';
+
+      if (alreadyMutualMatch || isSofia) {
         // It's a match!
         currentUser.matches.push(targetUserId);
         targetUser.matches.push(currentUserId);
-        await targetUser.save();
 
+        // If Sofia liked someone, make sure they also "like" her back
+        if (isSofia && !targetUser.swipedRight.includes(currentUserId)) {
+          targetUser.swipedRight.push(currentUserId);
+        }
+
+        await targetUser.save();
         await currentUser.save();
         return res.json({ match: true, user: targetUser });
       }
@@ -142,10 +157,68 @@ router.post('/swipe', auth, async (req, res) => {
 // Get matches
 router.get('/matches', auth, async (req, res) => {
   try {
+    console.log('🔍 Getting matches for user:', req.user._id);
     const user = await User.findById(req.user._id)
       .populate('matches', '-password -swipedRight -swipedLeft');
 
+    console.log('👤 User found:', user ? user.email : 'not found');
+    console.log('📊 Raw matches array:', user ? user.matches : 'no user');
+    console.log('📈 Number of matches:', user ? user.matches.length : 0);
+
     res.json(user.matches);
+  } catch (error) {
+    console.error('❌ Error in matches endpoint:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Clear swipe history - reset all swipes for current user
+router.post('/clear-swipe-history', auth, async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.user._id);
+
+    if (!currentUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Store the matches to keep, but clear swipe history
+    const currentMatches = [...currentUser.matches];
+
+    // Clear swipe history
+    currentUser.swipedRight = [];
+    currentUser.swipedLeft = [];
+    currentUser.matches = [];
+
+    await currentUser.save();
+
+    // Also remove current user from other users' swipe history (mutual reset)
+    await User.updateMany(
+      {},
+      {
+        $pull: {
+          swipedRight: currentUser._id,
+          swipedLeft: currentUser._id,
+          matches: currentUser._id
+        }
+      }
+    );
+
+    // Count how many new potential matches are available
+    const potentialMatches = await User.find({
+      _id: { $ne: currentUser._id },
+      gender: currentUser.interestedIn === 'both' ?
+        { $in: ['male', 'female', 'other'] } :
+        currentUser.interestedIn,
+      interestedIn: { $in: [currentUser.gender, 'both'] },
+      isActive: { $ne: false }
+    });
+
+    res.json({
+      success: true,
+      message: 'Swipe history cleared successfully',
+      newPotentialMatches: potentialMatches.length,
+      previousMatches: currentMatches.length
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { buildApiUrl, API_ENDPOINTS } from '@/config/api';
 
 interface User {
   id: string;
@@ -45,12 +46,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
     }
-    setLoading(false);
+
+    // Use a short timeout to ensure proper hydration
+    setTimeout(() => {
+      setLoading(false);
+    }, 100);
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('http://localhost:8888/api/auth/login', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.LOGIN), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (userData: RegisterData) => {
     try {
-      const response = await fetch('http://localhost:8888/api/auth/register', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.REGISTER), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

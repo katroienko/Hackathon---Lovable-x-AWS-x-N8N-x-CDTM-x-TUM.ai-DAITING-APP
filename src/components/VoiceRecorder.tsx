@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { buildApiUrl, API_ENDPOINTS } from '@/config/api';
 
 interface VoiceRecorderProps {
   onVoiceCloned?: (voiceData: { voiceId: string; name: string; status: string }) => void;
@@ -38,7 +39,7 @@ export default function VoiceRecorder({ onVoiceCloned }: VoiceRecorderProps) {
 
   const checkExistingVoice = async () => {
     try {
-      const response = await fetch('http://localhost:8888/api/voice/my-voice', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.MY_VOICE), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -133,7 +134,7 @@ export default function VoiceRecorder({ onVoiceCloned }: VoiceRecorderProps) {
       formData.append('voiceSample', audioBlob, 'voice-sample.webm');
       formData.append('name', voiceName);
 
-      const response = await fetch('http://localhost:8888/api/voice/clone-voice', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.CLONE_VOICE), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -169,7 +170,7 @@ export default function VoiceRecorder({ onVoiceCloned }: VoiceRecorderProps) {
     if (!confirm('Are you sure you want to delete your custom voice?')) return;
 
     try {
-      const response = await fetch('http://localhost:8888/api/voice/my-voice', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.MY_VOICE), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

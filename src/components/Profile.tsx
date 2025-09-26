@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import VoiceRecorder from './VoiceRecorder';
+import { buildApiUrl, API_ENDPOINTS } from '@/config/api';
 
 interface UserProfile {
   _id: string;
@@ -33,6 +34,7 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [clearingHistory, setClearingHistory] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -40,7 +42,7 @@ export default function Profile() {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch('http://localhost:8888/api/users/profile', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.PROFILE), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -62,7 +64,7 @@ export default function Profile() {
 
     setSaving(true);
     try {
-      const response = await fetch('http://localhost:8888/api/users/profile', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.PROFILE), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -83,6 +85,34 @@ export default function Profile() {
     }
   };
 
+  const clearSwipeHistory = async () => {
+    if (!confirm('Are you sure you want to clear your swipe history? This will allow you to see all profiles again, but will also remove all your current matches.')) {
+      return;
+    }
+
+    setClearingHistory(true);
+    try {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.CLEAR_SWIPE_HISTORY), {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`Success! ${data.newPotentialMatches} new profiles are now available to swipe.`);
+        // Refresh profile to update any counts
+        fetchProfile();
+      }
+    } catch (error) {
+      console.error('Failed to clear swipe history:', error);
+      alert('Failed to clear swipe history. Please try again.');
+    } finally {
+      setClearingHistory(false);
+    }
+  };
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
@@ -93,7 +123,7 @@ export default function Profile() {
     });
 
     try {
-      const response = await fetch('http://localhost:8888/api/users/photos', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.PHOTOS), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -124,13 +154,23 @@ export default function Profile() {
     <div className="p-6 max-h-screen overflow-y-auto">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Profile</h2>
-        <button
-          onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-          disabled={saving}
-          className="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 disabled:opacity-50"
-        >
-          {saving ? 'Saving...' : isEditing ? 'Save' : 'Edit'}
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={clearSwipeHistory}
+            disabled={clearingHistory || saving}
+            className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 disabled:opacity-50 text-sm"
+            title="Clear your swipe history to see all profiles again"
+          >
+            {clearingHistory ? 'Clearing...' : '🔄 Reset Swipes'}
+          </button>
+          <button
+            onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+            disabled={saving}
+            className="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : isEditing ? 'Save' : 'Edit'}
+          </button>
+        </div>
       </div>
 
       {/* Photos */}
