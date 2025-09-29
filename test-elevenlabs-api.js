@@ -3,7 +3,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 
 async function testElevenLabsAPI() {
-  const ELEVENLABS_API_KEY = 'sk_0a708403cd51b255b857e964b73da3607a042faea7802e95';
+
 
   // Create a simple test WAV file (just for testing API format)
   const testAudioPath = 'test-audio.wav';
